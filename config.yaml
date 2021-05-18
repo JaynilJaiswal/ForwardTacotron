@@ -1,6 +1,6 @@
 
 voc_model_id: 'asvoice2_energy_voc'
-tts_model_id: 'asvoice2_energy_tts'
+tts_model_id: 'asvoice2_red_taco_tts'
 
 data_path: 'data/' # output data path
 
