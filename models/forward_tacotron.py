@@ -55,7 +55,7 @@ class SeriesPredictor(nn.Module):
             BatchNormConv(conv_dims, conv_dims, 5, activation=torch.relu),
         ])
         self.rnn = nn.GRU(conv_dims, rnn_dims, batch_first=True, bidirectional=True)
-        self.lin = nn.Linear(2 * rnn_dims, 1)
+        self.rnn_out = nn.GRU(2 * rnn_dims, 1, batch_first=True, bidirectional=False)
         self.dropout = dropout
 
     def forward(self,
@@ -72,9 +72,9 @@ class SeriesPredictor(nn.Module):
             x = pack_padded_sequence(x, lengths=x_lens, batch_first=True,
                                      enforce_sorted=False)
         x, _ = self.rnn(x)
+        x, _ = self.rnn_out(x)
         if x_lens is not None:
             x, _ = pad_packed_sequence(x, padding_value=0.0, batch_first=True)
-        x = self.lin(x)
         return x / alpha
 
 
