@@ -13,10 +13,6 @@ from utils.text.cleaners import Cleaner
 from utils.text.recipes import ljspeech
 
 
-# Helper functions for argument types
-from utils.text.tokenizer import Tokenizer
-
-
 def valid_n_workers(num):
     n = int(num)
     if n < 1:
