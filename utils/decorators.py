@@ -1,9 +1,8 @@
 import traceback
 from time import time
-from typing import Callable
 
 
-def ignore_exception(f) -> Callable:
+def ignore_exception(f):
     def apply_func(*args, **kwargs):
         try:
             result = f(*args, **kwargs)
@@ -15,7 +14,7 @@ def ignore_exception(f) -> Callable:
     return apply_func
 
 
-def time_it(f) -> Callable:
+def time_it(f):
     def apply_func(*args, **kwargs):
         t_start = time()
         result = f(*args, **kwargs)

@@ -18,22 +18,16 @@ The model has following advantages:
 does not use any attention. Hence, the required memory grows linearly with text size, which makes it possible to synthesize large articles at once.
 
 
-## MAJOR UPDATE V1 --> V2 (10.05.2020)
-- Added optional energy conditioning similar to the one in FastSpeech2
-- Replaced hparams.py with config.yaml that is now stored in the model and loaded automatically
-- Major refactoring, added tests etc.
-
-Energy conditioning reduces mel validation loss:
-<p align="center">
-  <img src="assets/energy_tb.png" width="700" />
-</p>
+## UPDATE (28.10.2020)
+- Added pitch conditioning similar to the one in [FastPitch](https://arxiv.org/abs/2006.06873), model converges now in about 50k steps (a couple hrs training).
+- Pitch can be manipulated in inference, e.g. with --amp 2.0 for larger pitch swings.
+- Try pitch manipulation with the newest model in [colab](https://colab.research.google.com/github/as-ideas/ForwardTacotron/blob/master/notebooks/synthesize.ipynb).
 
 ## 🔈 Samples
 
 [Can be found here.](https://as-ideas.github.io/ForwardTacotron/)
 
-The samples are generated with a model trained on LJSpeech and vocoded with WaveRNN, [MelGAN](https://github.com/seungwonpark/melgan), or [HiFiGAN](https://github.com/jik876/hifi-gan). 
-You can try out the latest pretrained model with the following notebook:  
+The samples are generated with a model trained on LJSpeech. You can try out the latest pretrained model with the following notebook:  
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/as-ideas/ForwardTacotron/blob/master/notebooks/synthesize.ipynb)
 
@@ -55,8 +49,6 @@ pip install -r requirements.txt
 
 ## 🚀 Training your own Model
 
-Change the params in the config.yaml according to your needs and follow the steps below:
-
 (1) Download and preprocess the [LJSpeech](https://keithito.com/LJ-Speech-Dataset/) dataset:
  ```
 python preprocess.py --path /path/to/ljspeech
@@ -65,24 +57,23 @@ python preprocess.py --path /path/to/ljspeech
 ```
 python train_tacotron.py
 ```
-Once the training is finished, the model will automatically extract the alignment features from the dataset. In case you stopped the training early, you 
-can use the latest checkpoint to manually run the process with:
+(3) Use the trained tacotron model to create alignment features with:
 ```
 python train_tacotron.py --force_align
 ```
-(3) Train ForwardTacotron with:
+(4) Train ForwardTacotron with:
 ```
 python train_forward.py
 ```
-(4) Generate Sentences with Griffin-Lim vocoder:
+(5) Generate Sentences with Griffin-Lim vocoder:
 ```
 python gen_forward.py --alpha 1 --input_text 'this is whatever you want it to be' griffinlim
 ```
-If you want to use the [MelGAN](https://github.com/seungwonpark/melgan) or [HiFiGAN](https://github.com/jik876/hifi-gan) vocoder, you can produce .mel files with:
+If you want to use the [MelGAN](https://github.com/seungwonpark/melgan) vocoder, you can produce .mel files with:
 ```
 python gen_forward.py --input_text 'this is whatever you want it to be' melgan
 ```
-To vocode the resulting .mel files use the inference.py script from the MelGAN or HiFiGAN repo and point to the model output folder.
+To vocode the resulting .mel files use the inference.py script from the MelGAN repo and point to the model output folder (see inference example at [MelGAN](https://github.com/seungwonpark/melgan))
 
 As in the original repo you can also use a trained WaveRNN vocoder:
 ```
@@ -118,24 +109,13 @@ Here is what the ForwardTacotron tensorboard looks like:
 </p>
 
 
-## Pretrained Models
+## Use the pretrained Models
 
-| Model | Dataset | Commit |
-|---|---|---|
-|[forward_tacotron](https://public-asai-dl-models.s3.eu-central-1.amazonaws.com/ForwardTacotron/forward_step90k.pt)| ljspeech | latest |
-|[wavernn](https://public-asai-dl-models.s3.eu-central-1.amazonaws.com/ForwardTacotron/wave_step575k.pt)| ljspeech | latest |
-
-Our pre-trained LJSpeech model is compatible with the pre-trained vocoders:
-- [MelGAN](https://github.com/seungwonpark/melgan)
-- [HiFiGAN](https://github.com/jik876/hifi-gan)
-
-
-After downloading the models you can synthesize text using the pretrained models with
+You can synthesize text using the pretrained models with
 ```
-python gen_forward.py --input_text 'Hi there!' --checkpoint forward_step90k.pt wavernn --voc_checkpoint wave_step_575k.pt
+python gen_forward.py --input_text 'Hi there!' --hp_file pretrained/pretrained_hparams.py --tts_weights pretrained/forward_400K.pyt wavernn --voc_weights pretrained/wave_575K.pyt
 
 ```
-
 
 ## Tips for training a WaveRNN model
 
@@ -159,15 +139,12 @@ Here is what the WaveRNN tensorboard looks like:
 
 * [FastSpeech: Fast, Robust and Controllable Text to Speech](https://arxiv.org/abs/1905.09263)
 * [FastPitch: Parallel Text-to-speech with Pitch Prediction](https://arxiv.org/abs/2006.06873)
-* [HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis](https://arxiv.org/abs/2010.05646)
-* [MelGAN: Generative Adversarial Networks for Conditional Waveform Synthesis](https://arxiv.org/abs/1910.06711)
 
 ## Acknowlegements
 
 * [https://github.com/keithito/tacotron](https://github.com/keithito/tacotron)
 * [https://github.com/fatchord/WaveRNN](https://github.com/fatchord/WaveRNN)
 * [https://github.com/seungwonpark/melgan](https://github.com/seungwonpark/melgan)
-* [https://github.com/jik876/hifi-gan](https://github.com/jik876/hifi-gan)
 * [https://github.com/xcmyz/LightSpeech](https://github.com/xcmyz/LightSpeech)
 * [https://github.com/resemble-ai/Resemblyzer](https://github.com/resemble-ai/Resemblyzer)
 * [https://github.com/NVIDIA/DeepLearningExamples/tree/master/PyTorch/SpeechSynthesis/FastPitch](https://github.com/NVIDIA/DeepLearningExamples/tree/master/PyTorch/SpeechSynthesis/FastPitch)
